@@ -1,6 +1,7 @@
 package com.wuxj.rpc;
 
 import com.wuxj.rpc.client.RpcClient;
+import com.wuxj.rpc.client.RpcResponse;
 
 import java.io.IOException;
 
@@ -21,7 +22,8 @@ public class RpcClientTest {
       String className = "com.wuxj.rpc.service.HelloServiceImpl";
       String methodName = "sayHello";
 
-      String result = (String) client.invoke(className, methodName, new Class[]{String.class}, new Object[]{"test rpc"});
-      System.out.println(result);
+      RpcResponse response = client.invoke(className, methodName, new Class[]{String.class}, new Object[]{"test rpc"});
+      //String result = (String)response.getResult();
+      System.out.println(response);
   }
 }

@@ -2,7 +2,9 @@ package com.wuxj.rpc.client;
 
 import com.wuxj.rpc.serializer.ObjectSerializer;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
@@ -23,7 +25,9 @@ public class RpcClient {
         this.socket = new Socket(host, port);
     }
 
-    public Object invoke(String className, String methodName, Class<?>[] paramTypes, Object[] params) {
+    public RpcResponse invoke(String className, String methodName, Class<?>[] paramTypes, Object[] params) {
+        RpcResponse response = new RpcResponse(null);
+
         try{
             // 创建统一网络请求对象
             RpcRequest rpcRequest = new RpcRequest(className, methodName, paramTypes, params);
@@ -34,20 +38,39 @@ public class RpcClient {
             // 通过socket发送数据
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectOutputStream.writeObject(requestData);
+            System.out.println("客户端写入数据");
 
             // socket接收数据
+            //byte[] buffer = new byte[1024];
+
+
+
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-            // 指定为字节数组
-            byte[] data = (byte[])objectInputStream.readObject();
+            //byte[] data = socket.getInputStream().readAllBytes();
+
+            Object object = objectInputStream.readObject();
+            //byte[] data = objectInputStream.readAllBytes();
+            //byte[] data = (byte[])objectInputStream.readObject();
             // 反序列化成java对象
-            Object object = ObjectSerializer.deserialize(data);
-            return object;
+            //Object object = ObjectSerializer.deserialize(data);
+            response = (RpcResponse) object;
+            System.out.println("客户端接收数据:" + response.toString());
+            return response;
 
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
 
-        return null;
+        return response;
     }
+
+    // 合并两个字节数组
+    private static byte[] concatenateByteArrays(byte[] a, byte[] b) {
+        byte[] result = new byte[a.length + b.length];
+        System.arraycopy(a, 0, result, 0, a.length);
+        System.arraycopy(b, 0, result, a.length, b.length);
+        return result;
+    }
+
 }

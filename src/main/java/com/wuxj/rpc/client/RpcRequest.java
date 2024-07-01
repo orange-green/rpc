@@ -1,6 +1,7 @@
 package com.wuxj.rpc.client;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * <p>
@@ -59,5 +60,16 @@ public class RpcRequest implements Serializable {
 
     public void setParams(Object[] params) {
         this.params = params;
+    }
+
+
+    @Override
+    public String toString() {
+        return "RpcRequest{" +
+                "className='" + className + '\'' +
+                ", methodName='" + methodName + '\'' +
+                ", paramTypes=" + Arrays.toString(paramTypes) +
+                ", params=" + Arrays.toString(params) +
+                '}';
     }
 }

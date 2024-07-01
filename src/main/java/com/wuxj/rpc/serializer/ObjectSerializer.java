@@ -22,10 +22,13 @@ public class ObjectSerializer {
 
 
     // 反序列化 字节数据 -> java对象
-    public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+    public static  Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
         Object object = objectInputStream.readObject();
+
+
         return object;
     }
 

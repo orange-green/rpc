@@ -44,7 +44,8 @@ public class RpcServer {
     }
 
 
-    private Object invoke(RpcRequest request)  {
+    private RpcResponse invoke(RpcRequest request)  {
+        RpcResponse rpcResponse = new RpcResponse(null);
         try{
             String className = request.getClassName();
             Class<?> aClass = Class.forName(className);
@@ -52,14 +53,15 @@ public class RpcServer {
             Method method = methodMap.get(request.getMethodName());
 
             Object result = method.invoke(instance, request.getParams());
-            return result;
+            rpcResponse = new RpcResponse(result);
+            return rpcResponse;
         }
 
         catch (Exception e) {
             e.printStackTrace();
         }
 
-        return null;
+        return rpcResponse;
     }
 
     public void start() {
@@ -67,26 +69,24 @@ public class RpcServer {
           // 开始socket监听
           System.out.println("socket监听开始");
             while (true) {
-                Socket socket = serverSocket.accept();
-                new Thread(() -> {
-                    try{
-                        // 获取监听到的socket数据
-                        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-                        byte[] data = (byte[]) objectInputStream.readObject();
-                        // 反序列化,预定请求体安装RpcRequest格式组织数据，所以能反序列化为RpcRequest对象
-                        RpcRequest request = (RpcRequest)ObjectSerializer.deserialize(data);
-                        System.out.println("收到消息：" + request.toString());
-                        // 调用方法
-                        Object result = invoke(request);
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("客户端已连接");
 
-                        // 发送方法调用的结果
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                        objectOutputStream.writeObject(request);
+                // 获取监听到的socket数据
+                ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+                byte[] data = (byte[]) objectInputStream.readObject();
+                // 反序列化,预定请求体安装RpcRequest格式组织数据，所以能反序列化为RpcRequest对象
+                RpcRequest request = (RpcRequest)ObjectSerializer.deserialize(data);
+                System.out.println("服务端收到消息：" + request.toString());
+                // 调用方法
 
-                    } catch (IOException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                });
+                RpcResponse response = invoke(request);
+
+                // 发送方法调用的结果
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+                objectOutputStream.writeObject(response);
+                System.out.printf("服务端发送数据:"+response.toString());
+
             }
         }
 
